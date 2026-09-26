@@ -31,6 +31,14 @@
 
 详细课程路线见 [课设执行计划.md](课设执行计划.md)。
 
+换电脑、交给新的 Codex 任务或开始真机接入前，请先阅读：
+
+- [项目交接](docs/HANDOFF.md)
+- [课程要求摘要](docs/COURSE_REQUIREMENTS.md)
+- [真机首次启动](docs/HARDWARE_SETUP.md)
+- [游戏本与 Jetson 网线配置](docs/NETWORK_SETUP.md)
+- [真机标定记录](docs/CALIBRATION.md)
+
 ## 环境要求
 
 - macOS Apple Silicon 或 Linux x86_64
