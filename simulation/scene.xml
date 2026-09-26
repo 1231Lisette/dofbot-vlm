@@ -1,0 +1,119 @@
+<mujoco model="dofbot_lab">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.01" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <visual>
+    <global azimuth="135" elevation="-25" offwidth="720" offheight="480"/>
+    <rgba haze="0.08 0.10 0.15 1"/>
+  </visual>
+  <default>
+    <joint damping="1.4" armature="0.04"/>
+    <geom friction="0.9 0.1 0.01" contype="1" conaffinity="1"/>
+    <position kp="48" kv="7" forcerange="-30 30"/>
+    <default class="robot_collision">
+      <!-- Category 2 collides with the environment (category 1), but robot
+           proxies do not collide with each other and create false contacts. -->
+      <geom contype="2" conaffinity="1" group="3" mass="0"
+            friction="0.9 0.1 0.01" rgba="1 0.38 0.08 0"/>
+    </default>
+  </default>
+  <asset>
+    <texture name="ground" type="2d" builtin="checker" rgb1="0.055 0.07 0.10" rgb2="0.09 0.11 0.15" width="512" height="512"/>
+    <material name="ground" texture="ground" texrepeat="4 4" reflectance="0.15"/>
+    <material name="metal" rgba="0.18 0.24 0.31 1" metallic="0.65" roughness="0.35"/>
+    <material name="accent" rgba="0.12 0.80 0.72 1" metallic="0.2" roughness="0.3"/>
+    <material name="target" rgba="0.12 0.80 0.72 0.22" metallic="0.1" roughness="0.45"/>
+    <mesh name="dofbot_base" file="dofbot_description/meshes/base_link.STL"/>
+    <mesh name="dofbot_link1" file="dofbot_description/meshes/link1.STL"/>
+    <mesh name="dofbot_link2" file="dofbot_description/meshes/link2.STL"/>
+    <mesh name="dofbot_link3" file="dofbot_description/meshes/link3.STL"/>
+    <mesh name="dofbot_link4" file="dofbot_description/meshes/link4.STL"/>
+    <mesh name="dofbot_link5_base" file="dofbot_description/meshes/link5_base.STL"/>
+    <mesh name="dofbot_left_finger" file="dofbot_description/meshes/link5_left_finger.STL"/>
+    <mesh name="dofbot_right_finger" file="dofbot_description/meshes/link5_right_finger.STL"/>
+  </asset>
+  <worldbody>
+    <light pos="0 -1 2.5" dir="0 0 -1" diffuse="0.9 0.9 0.9"/>
+    <light pos="-1 1 1.5" dir="0 -0.4 -1" diffuse="0.3 0.5 0.7"/>
+    <geom name="floor" type="plane" size="2 2 0.1" material="ground"/>
+    <body name="table" pos="0 0 0.34">
+      <geom name="table_surface" type="box" size="0.72 0.50 0.035" rgba="0.20 0.15 0.11 1"/>
+      <geom type="box" pos="0.62 0.40 -0.31" size="0.035 0.035 0.31" rgba="0.13 0.14 0.17 1"/>
+      <geom type="box" pos="0.62 -0.40 -0.31" size="0.035 0.035 0.31" rgba="0.13 0.14 0.17 1"/>
+      <geom type="box" pos="-0.62 0.40 -0.31" size="0.035 0.035 0.31" rgba="0.13 0.14 0.17 1"/>
+      <geom type="box" pos="-0.62 -0.40 -0.31" size="0.035 0.035 0.31" rgba="0.13 0.14 0.17 1"/>
+    </body>
+    <geom name="target_zone" type="cylinder" pos="-0.20 0.05 0.379" size="0.075 0.003" material="target" contype="0" conaffinity="0"/>
+    <body name="red_cube" pos="-0.18 -0.17 0.389" euler="0 0 0.436332">
+      <freejoint name="red_cube_joint"/>
+      <geom name="red_cube_geom" type="box" size="0.014 0.014 0.014" rgba="0.92 0.22 0.30 1" mass="0.025"/>
+    </body>
+    <body name="blue_cube" pos="-0.30 -0.21 0.389" euler="0 0 -0.349066">
+      <freejoint name="blue_cube_joint"/>
+      <geom name="blue_cube_geom" type="box" size="0.014 0.014 0.014" rgba="0.22 0.48 0.95 1" mass="0.025"/>
+    </body>
+    <body name="green_cube" pos="-0.47 -0.17 0.389" euler="0 0 0.872665">
+      <freejoint name="green_cube_joint"/>
+      <geom name="green_cube_geom" type="box" size="0.014 0.014 0.014" rgba="0.22 0.84 0.50 1" mass="0.025"/>
+    </body>
+
+    <body name="dofbot" pos="-0.35 0 0.405" euler="0 0 3.14159">
+      <geom type="mesh" mesh="dofbot_base" rgba="0.28 0.31 0.34 1" contype="0" conaffinity="0"/>
+      <geom name="arm_base_collision" class="robot_collision" type="box"
+            pos="0 -0.070 0.03975" size="0.060 0.130 0.04025"/>
+      <body name="dofbot_link1" pos="0 0 0.06605" quat="0.999985 -0.00540247 0 0">
+        <joint name="base" type="hinge" axis="0 0 1" range="-1.5708 1.5708"/>
+        <geom type="mesh" mesh="dofbot_link1" rgba="0.95 0.68 0.10 1" contype="0" conaffinity="0"/>
+        <geom name="arm_link1_collision" class="robot_collision" type="cylinder"
+              pos="0 0 0.0246" size="0.0275 0.0274"/>
+        <body name="dofbot_link2" pos="0 -0.00031873 0.04145" quat="0.707105 0 0.707108 0">
+          <joint name="shoulder" type="hinge" axis="0 0 1" range="-1.5708 1.5708"/>
+          <geom type="mesh" mesh="dofbot_link2" rgba="0.31 0.34 0.37 1" contype="0" conaffinity="0"/>
+          <geom name="arm_link2_collision" class="robot_collision" type="capsule"
+                fromto="0.010 -0.003 0 -0.090 -0.003 0" size="0.0208"/>
+          <body name="dofbot_link3" pos="-0.08285 0 0">
+            <joint name="elbow" type="hinge" axis="0 0 1" range="-1.5708 1.5708"/>
+            <geom type="mesh" mesh="dofbot_link3" rgba="0.95 0.68 0.10 1" contype="0" conaffinity="0"/>
+            <geom name="arm_link3_collision" class="robot_collision" type="capsule"
+                  fromto="0.010 -0.003 0 -0.090 -0.003 0" size="0.0215"/>
+            <body name="dofbot_link4" pos="-0.08285 0 0" quat="0.999991 0 0 0.00415404">
+              <joint name="wrist_pitch" type="hinge" axis="0 0 1" range="-1.5708 1.5708"/>
+              <geom type="mesh" mesh="dofbot_link4" rgba="0.31 0.34 0.37 1" contype="0" conaffinity="0"/>
+              <geom name="arm_link4_collision" class="robot_collision" type="box"
+                    pos="-0.0315 -0.0236 -0.00065" size="0.0452 0.0560 0.0188"/>
+              <body name="dofbot_link5" pos="-0.07385 -0.001 0" quat="0.707388 0 -0.706825 0">
+                <joint name="wrist_roll" type="hinge" axis="0 0 1" range="-1.5708 3.1416"/>
+                <geom type="mesh" mesh="dofbot_link5_base" rgba="0.92 0.92 0.92 1" contype="0" conaffinity="0"/>
+                <geom name="arm_link5_collision" class="robot_collision" type="box"
+                      pos="0.00002 0.00475 0.018" size="0.0419 0.01525 0.018"/>
+                <geom name="arm_link5_left_collision" class="robot_collision" type="box"
+                      pos="-0.034 0.00475 0.044" size="0.008 0.01525 0.009"/>
+                <geom name="arm_link5_right_collision" class="robot_collision" type="box"
+                      pos="0.034 0.00475 0.044" size="0.008 0.01525 0.009"/>
+                <site name="tool_center" pos="0 -0.0015 0.070" size="0.006" rgba="1 0.25 0.10 1"/>
+                <body name="left_finger">
+                  <joint name="gripper_left" type="slide" axis="1 0 0" range="0 0.012" damping="0.4"/>
+                  <geom type="mesh" mesh="dofbot_left_finger" rgba="0.92 0.92 0.92 1" contype="0" conaffinity="0"/>
+                  <geom name="left_finger_collision" class="robot_collision" type="box" pos="-0.031 -0.0015 0.064" size="0.008 0.004 0.024" rgba="1 0.25 0.10 0.12" mass="0.008"/>
+                </body>
+                <body name="right_finger">
+                  <joint name="gripper_right" type="slide" axis="-1 0 0" range="0 0.012" damping="0.4"/>
+                  <geom type="mesh" mesh="dofbot_right_finger" rgba="0.92 0.92 0.92 1" contype="0" conaffinity="0"/>
+                  <geom name="right_finger_collision" class="robot_collision" type="box" pos="0.031 -0.0015 0.064" size="0.008 0.004 0.024" rgba="1 0.25 0.10 0.12" mass="0.008"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <actuator>
+    <position name="base_motor" joint="base" ctrlrange="-1.5708 1.5708"/>
+    <position name="shoulder_motor" joint="shoulder" ctrlrange="-1.5708 1.5708"/>
+    <position name="elbow_motor" joint="elbow" ctrlrange="-1.5708 1.5708"/>
+    <position name="wrist_pitch_motor" joint="wrist_pitch" ctrlrange="-1.5708 1.5708"/>
+    <position name="wrist_roll_motor" joint="wrist_roll" ctrlrange="-1.5708 3.1416"/>
+    <position name="gripper_left_motor" joint="gripper_left" kp="80" kv="5" ctrlrange="0 0.012"/>
+    <position name="gripper_right_motor" joint="gripper_right" kp="80" kv="5" ctrlrange="0 0.012"/>
+  </actuator>
+</mujoco>

@@ -1,0 +1,13 @@
+[app]
+name = "DOFBOT LAB"
+host = "127.0.0.1"
+port = 8000
+
+[robot]
+backend = "mujoco"
+control_hz = 100
+state_hz = 15
+
+[simulation]
+model_path = "simulation/scene.xml"
+
