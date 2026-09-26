@@ -35,6 +35,24 @@ Web 上位机构成的课程设计系统，完成分拣、堆垛与三手势交�
 - 尚未接入 YOLO-Seg 真实检测结果。
 - 尚未完成真实抓取、分拣、堆垛的重复实验与数据分析。
 
+## Jetson 首次只读基线（2026-09-26）
+
+- 已通过 SSH 确认设备为 Jetson Nano Developer Kit，Ubuntu 18.04.6、L4T R32.4.4、
+  Python 3.6.9、ROS Melodic 和 CUDA 10.2。
+- 系统实际从 USB `/dev/sda1` 根分区运行；`/dev/mmcblk0` 同时存在，备份前必须重新核对设备。
+- USB 摄像头已识别为 Sonix `USB 2.0 Camera`（`0c45:6340`），节点 `/dev/video0`，
+  支持 YUYV 640×480、最高 30 FPS，并带 USB Audio 麦克风。
+- 原厂 `Arm_Lib 0.0.5` 已安装，使用 I²C-1、控制板地址 `0x15`。
+- `arm.service`、`dofbot_oled.service` 和 `jetson_jupyter.service` 均开机运行；OLED 当前占用
+  `/dev/i2c-1`。在确认总线并发和控制所有权前，不启动自定义 Arm_Lib 控制进程。
+- 厂家舵机读取 API 会先写查询寄存器，因此本次严格只读检查没有读取舵机角度。
+- 完整结果与后续安全条件见 `docs/CALIBRATION.md` 的“Jetson 首次只读基线”。
+
+后续在 2026-09-26 获准采集舵机状态时，调用 `Arm_Lib 0.0.5` 的版本、read 和 ping 查询接口
+期间，用户观察到机械臂发生一次意外运动。返回值也明显不稳定，不能作为标定数据。查询已立即
+停止，SSH 已退出。查明控制板协议/固件与厂家库匹配关系前，禁止再次调用任何 Arm_Lib 接口；
+详见 `docs/CALIBRATION.md` 的“舵机查询安全事件”。
+
 ## 新电脑恢复
 
 ```bash
