@@ -13,7 +13,7 @@
     "3": {"name": "肘部", "enabled": false, "min": 90, "max": 90, "initial": 90},
     "4": {"name": "腕部俯仰", "enabled": false, "min": 90, "max": 90, "initial": 90},
     "5": {"name": "腕部旋转", "enabled": false, "min": 90, "max": 90, "initial": 90},
-    "6": {"name": "夹爪", "enabled": true, "min": 170, "max": 180, "initial": 180}
+    "6": {"name": "夹爪", "enabled": true, "min": 90, "max": 180, "initial": 180}
   },
   "gripper": {
     "servo_id": 6,

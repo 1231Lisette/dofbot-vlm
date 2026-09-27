@@ -17,8 +17,9 @@ DOFBOT_HARDWARE_CONFIRM=POWER_CUTOFF_READY \
 python3 server.py --web-root ./web --enable-hardware
 ```
 
-The committed configuration unlocks only Servo 6 in the already tested 170–180° envelope. Servos
-1–5 and the Victory pose remain locked until their mappings, directions and soft limits are measured.
+The committed configuration unlocks only Servo 6 in the operator-requested 90–180° envelope. Test
+that expanded range incrementally rather than commanding an immediate 180° to 90° jump. Servos 1–5
+and the Victory pose remain locked until their mappings, directions and soft limits are measured.
 
 The red Web emergency-stop button calls the vendor torque-off command. The arm can fall when torque
 is removed, so it does not replace the physical power cutoff and must only be used while the arm is

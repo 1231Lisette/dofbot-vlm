@@ -28,11 +28,11 @@ def test_gripper_direction_matches_measured_hardware():
 
 def test_servo_six_accepts_only_commissioned_envelope():
     settings = config()
-    SERVER.validate_move(settings, 6, 170, 2500)
+    SERVER.validate_move(settings, 6, 90, 2500)
     SERVER.validate_move(settings, 6, 180, 2500)
-    with pytest.raises(ValueError, match="inside 170..180"):
-        SERVER.validate_move(settings, 6, 169, 2500)
-    with pytest.raises(ValueError, match="inside 170..180"):
+    with pytest.raises(ValueError, match="inside 90..180"):
+        SERVER.validate_move(settings, 6, 89, 2500)
+    with pytest.raises(ValueError, match="inside 90..180"):
         SERVER.validate_move(settings, 6, 181, 2500)
 
 
