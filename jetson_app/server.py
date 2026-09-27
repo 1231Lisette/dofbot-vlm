@@ -112,6 +112,7 @@ class ArmController(object):
         self.config = config
         self.enabled = enabled
         self.estopped = False
+        self.last_torque_command = "none"
         self.arm = None
         self.lock = threading.Lock()
         self.last_angles = dict(
@@ -150,6 +151,7 @@ class ArmController(object):
         with self.lock:
             self.arm.Arm_serial_set_torque(0)
             self.estopped = True
+            self.last_torque_command = "off"
 
     def resume(self):
         if not self.enabled or self.arm is None:
@@ -157,6 +159,26 @@ class ArmController(object):
         with self.lock:
             self.arm.Arm_serial_set_torque(1)
             self.estopped = False
+            self.last_torque_command = "on"
+
+    def victory_pose(self):
+        pose = self.config["victory_pose"]
+        if not pose.get("enabled", False):
+            raise RuntimeError(pose.get("reason", "Victory pose is locked"))
+        steps = pose.get("steps", [])
+        if not steps:
+            raise RuntimeError("Victory pose has no calibrated steps")
+        validated = []
+        for step in steps:
+            servo_id = int(step["servo_id"])
+            angle = int(step["angle"])
+            duration_ms = int(step.get("duration_ms", self.config["move_time_ms"]))
+            validate_move(self.config, servo_id, angle, duration_ms)
+            validated.append((servo_id, angle, duration_ms, int(step.get("pause_ms", 0))))
+        self.require_hardware()
+        for servo_id, angle, duration_ms, pause_ms in validated:
+            self.move(servo_id, angle, duration_ms)
+            time.sleep((duration_ms + pause_ms) / 1000.0)
 
     def close(self):
         if self.arm is not None:
@@ -197,11 +219,13 @@ def create_app(config, web_root, hardware_enabled):
         return jsonify({
             "hardware_enabled": controller.enabled,
             "estopped": controller.estopped,
+            "last_torque_command": controller.last_torque_command,
             "camera_ready": camera.jpeg() is not None,
             "camera_error": camera.error,
             "servos": config["servos"],
             "last_angles": controller.last_angles,
             "move_time_ms": config["move_time_ms"],
+            "live_move_time_ms": config["live_move_time_ms"],
             "gripper": config["gripper"],
             "victory_pose": config["victory_pose"],
         })
@@ -237,6 +261,11 @@ def create_app(config, web_root, hardware_enabled):
     def resume():
         controller.resume()
         return jsonify({"ok": True, "estopped": False})
+
+    @app.route("/api/victory", methods=["POST"])
+    def victory():
+        controller.victory_pose()
+        return jsonify({"ok": True})
 
     @app.errorhandler(ValueError)
     @app.errorhandler(RuntimeError)

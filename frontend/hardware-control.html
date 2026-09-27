@@ -48,9 +48,9 @@
     <section class="panel servo-panel">
       <div class="panel-title">
         <div><span>03</span><h2>六轴单舵机控制</h2></div>
-        <div class="torque-actions"><button id="resume" disabled>恢复扭矩</button><b id="hardware-state">硬件锁定</b></div>
+        <div class="torque-actions"><button id="resume" disabled>恢复/开启扭矩</button><b id="hardware-state">硬件锁定</b></div>
       </div>
-      <p class="section-note">每次只发送一个舵机目标。未完成标定的舵机会由服务端拒绝，而不是仅靠网页禁用。</p>
+      <p class="section-note">拖动滑条会限频发送单舵机目标；松手无需再点发送。未完成标定的舵机会由服务端拒绝，而不是仅靠网页禁用。</p>
       <div id="servo-controls" class="servo-controls"></div>
     </section>
   </main>

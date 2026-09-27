@@ -14,7 +14,7 @@ const resumeButton = document.querySelector("#resume");
 const gestures = {
   Thumb_Up: { icon:"👍", name:"点赞", action:"张开夹爪", frames:6, endpoint:"/api/gripper/open" },
   Closed_Fist: { icon:"✊", name:"握拳", action:"闭合夹爪", frames:6, endpoint:"/api/gripper/close" },
-  Victory: { icon:"✌️", name:"V 手势", action:"上举并点头两次", frames:7, endpoint:null },
+  Victory: { icon:"✌️", name:"V 手势", action:"上举并点头两次", frames:7, endpoint:"/api/victory" },
 };
 const connections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 
@@ -24,6 +24,7 @@ let running = true;
 let currentGesture = null;
 let stableFrames = 0;
 let latched = false;
+const liveMoves = new Map();
 
 async function api(path, options = {}) {
   const response = await fetch(path, options);
@@ -41,11 +42,6 @@ function drawHand(hand) {
 }
 
 async function triggerGesture(definition) {
-  if (!definition.endpoint) {
-    const reason = status?.victory_pose?.reason || "动作尚未标定";
-    message.textContent = `V 手势已识别，但已被安全锁阻止：${reason}`;
-    return;
-  }
   if (!unlock.checked) {
     message.textContent = `${definition.action}未发送：请先完成现场安全确认。`;
     return;
@@ -55,6 +51,39 @@ async function triggerGesture(definition) {
     message.textContent = `${definition.action}命令已发送，目标 ${result.angle}°。`;
   } catch (error) {
     message.textContent = `动作被服务端阻止：${error.message}`;
+  }
+}
+
+function queueLiveMove(servoId, angle) {
+  if (!unlock.checked) {
+    message.textContent = "拖动未发送：请先完成现场安全确认。";
+    return;
+  }
+  const existing = liveMoves.get(servoId) || { timer:null, inFlight:false, latest:null };
+  existing.latest = angle;
+  clearTimeout(existing.timer);
+  existing.timer = setTimeout(() => flushLiveMove(servoId), 140);
+  liveMoves.set(servoId, existing);
+}
+
+async function flushLiveMove(servoId) {
+  const state = liveMoves.get(servoId);
+  if (!state || state.inFlight || state.latest === null) return;
+  const angle = state.latest;
+  state.latest = null;
+  state.inFlight = true;
+  try {
+    await api(`/api/servos/${servoId}`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({angle, duration_ms:status.live_move_time_ms}),
+    });
+    message.textContent = `S${servoId} 正在跟随：${angle}°。`;
+  } catch (error) {
+    message.textContent = `S${servoId} 被阻止：${error.message}`;
+  } finally {
+    state.inFlight = false;
+    if (state.latest !== null) state.timer = setTimeout(() => flushLiveMove(servoId), 80);
   }
 }
 
@@ -110,14 +139,9 @@ function renderServos() {
   Object.entries(status.servos).forEach(([id,item])=>{
     const article=document.createElement("article"); article.className=`servo-control${item.enabled?"":" locked"}`;
     const value=status.last_angles[id];
-    article.innerHTML=`<div><strong>S${id} · ${item.name}</strong><small>${item.enabled?`${item.min}–${item.max}° 软限位`:"待标定 · 服务端锁定"}</small></div><input type="range" min="${item.min}" max="${item.max}" value="${value}" ${item.enabled?"":"disabled"}><output>${value}°</output><button ${item.enabled?"":"disabled"}>发送</button>`;
-    const slider=article.querySelector("input"); const output=article.querySelector("output"); const button=article.querySelector("button");
-    slider.addEventListener("input",()=>{output.value=`${slider.value}°`;});
-    button.addEventListener("click",async()=>{
-      if (!unlock.checked) { message.textContent="未发送：请先完成现场安全确认。"; return; }
-      try { await api(`/api/servos/${id}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({angle:Number(slider.value),duration_ms:status.move_time_ms})}); message.textContent=`S${id} 已发送 ${slider.value}°。`; }
-      catch(error){message.textContent=`S${id} 被阻止：${error.message}`;}
-    });
+    article.innerHTML=`<div><strong>S${id} · ${item.name}</strong><small>${item.enabled?`${item.min}–${item.max}° · 拖动跟随`:"待标定 · 服务端锁定"}</small></div><input type="range" min="${item.min}" max="${item.max}" value="${value}" ${item.enabled?"":"disabled"}><output>${value}°</output>`;
+    const slider=article.querySelector("input"); const output=article.querySelector("output");
+    slider.addEventListener("input",()=>{output.value=`${slider.value}°`; queueLiveMove(id,Number(slider.value));});
     root.append(article);
   });
 }
@@ -126,8 +150,8 @@ async function refreshStatus() {
   status=await api("/api/status");
   serverState.textContent=status.hardware_enabled?"JETSON · HARDWARE":"JETSON · CAMERA ONLY";
   serverState.classList.add("live");
-  hardwareState.textContent=status.estopped?"扭矩已关闭":status.hardware_enabled?"真机已连接":"硬件锁定";
-  resumeButton.disabled=!status.hardware_enabled||!status.estopped;
+  hardwareState.textContent=status.estopped?"扭矩已关闭":status.hardware_enabled?"扭矩状态未知":"硬件锁定";
+  resumeButton.disabled=!status.hardware_enabled;
   renderServos();
 }
 

@@ -44,3 +44,15 @@ def test_uncalibrated_servo_is_locked():
 def test_fast_motion_is_rejected():
     with pytest.raises(ValueError, match="1500..5000"):
         SERVER.validate_move(config(), 6, 175, 500)
+
+
+def test_live_drag_uses_slow_bounded_duration():
+    settings = config()
+    assert settings["live_move_time_ms"] == 1500
+    SERVER.validate_move(settings, 6, 135, settings["live_move_time_ms"])
+
+
+def test_victory_pose_stays_locked_until_joint_calibration():
+    pose = config()["victory_pose"]
+    assert pose["enabled"] is False
+    assert pose["steps"] == []

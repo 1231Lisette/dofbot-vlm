@@ -7,6 +7,7 @@
     "max_fps": 12
   },
   "move_time_ms": 2500,
+  "live_move_time_ms": 1500,
   "servos": {
     "1": {"name": "底座", "enabled": false, "min": 90, "max": 90, "initial": 90},
     "2": {"name": "肩部", "enabled": false, "min": 90, "max": 90, "initial": 90},
@@ -23,6 +24,7 @@
   },
   "victory_pose": {
     "enabled": false,
-    "reason": "舵机 2、3、4 尚未逐轴完成中位、方向和软限位标定"
+    "reason": "舵机 2、3、4 尚未逐轴完成中位、方向和软限位标定",
+    "steps": []
   }
 }
