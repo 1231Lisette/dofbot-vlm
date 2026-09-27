@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOFBOT · 手势台</title>
+  <link rel="stylesheet" href="./gesture-lite.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <p class="eyebrow">DOFBOT / LOCAL VISION</p>
+        <h1>手势控制台</h1>
+        <p class="subtitle">识别完全在这台电脑的浏览器内完成。当前为预览模式，不会向机械臂发送命令。</p>
+      </div>
+      <span id="engine-state" class="status idle">待机</span>
+    </header>
+
+    <section class="workspace">
+      <div class="camera-panel">
+        <div class="camera-frame" id="camera-frame">
+          <video id="camera" playsinline muted></video>
+          <canvas id="overlay" width="640" height="480"></canvas>
+          <div id="placeholder" class="placeholder">
+            <span>CAMERA OFFLINE</span>
+            <strong>选择摄像头，然后开始识别</strong>
+          </div>
+          <span class="preview-badge">PREVIEW ONLY</span>
+        </div>
+
+        <div class="camera-controls">
+          <label>
+            <span>视频设备</span>
+            <select id="camera-select"><option value="">默认摄像头</option></select>
+          </label>
+          <label class="mirror-control"><input id="mirror" type="checkbox" checked> 镜像预览</label>
+          <button id="start" class="primary">开启识别</button>
+          <button id="stop" disabled>停止</button>
+        </div>
+      </div>
+
+      <aside class="console">
+        <p class="eyebrow">LIVE RESULT</p>
+        <div class="result">
+          <span id="gesture-icon">—</span>
+          <div><strong id="gesture-name">等待输入</strong><small id="gesture-action">尚未触发</small></div>
+          <b id="confidence">0%</b>
+        </div>
+        <div class="progress"><i id="progress-bar"></i></div>
+        <p id="hint" class="hint">手势需连续稳定出现，放下手后才能再次触发。</p>
+
+        <div class="gesture-list">
+          <article data-gesture="Open_Palm">
+            <span>✋</span><div><strong>张开手掌</strong><small>急停 · 连续 3 帧</small></div>
+          </article>
+          <article data-gesture="Thumb_Up">
+            <span>👍</span><div><strong>点赞</strong><small>张开夹爪 · 连续 6 帧</small></div>
+          </article>
+          <article data-gesture="Closed_Fist">
+            <span>✊</span><div><strong>握拳</strong><small>闭合夹爪 · 连续 6 帧</small></div>
+          </article>
+        </div>
+
+        <div class="safety">
+          <strong>硬件安全锁：开启</strong>
+          <span>此页面没有真机控制接口，适合先调整摄像头角度、光线和识别距离。</span>
+        </div>
+      </aside>
+    </section>
+  </main>
+  <script type="module" src="./gesture-lite.js"></script>
+</body>
+</html>
