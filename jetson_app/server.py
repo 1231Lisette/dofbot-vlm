@@ -57,6 +57,8 @@ class Camera(object):
         self.error = None
         self.running = False
         self.lock = threading.Lock()
+        self.active_servo_id = None
+        self.motion_until = 0.0
         self.thread = None
         self.cv2 = None
 
@@ -133,8 +135,18 @@ class ArmController(object):
         validate_move(self.config, servo_id, angle, duration_ms)
         self.require_hardware()
         with self.lock:
+            now = time.monotonic()
+            if now < self.motion_until and self.active_servo_id != servo_id:
+                remaining = self.motion_until - now
+                raise RuntimeError(
+                    "servo {} is still moving; wait {:.1f}s before changing servo {}".format(
+                        self.active_servo_id, remaining, servo_id
+                    )
+                )
             self.arm.Arm_serial_servo_write(servo_id, angle, duration_ms)
             self.last_angles[str(servo_id)] = angle
+            self.active_servo_id = servo_id
+            self.motion_until = now + duration_ms / 1000.0
 
     def gripper(self, state):
         item = self.config["gripper"]
@@ -224,6 +236,7 @@ def create_app(config, web_root, hardware_enabled):
             "camera_error": camera.error,
             "servos": config["servos"],
             "last_angles": controller.last_angles,
+            "active_servo_id": controller.active_servo_id,
             "move_time_ms": config["move_time_ms"],
             "live_move_time_ms": config["live_move_time_ms"],
             "gripper": config["gripper"],

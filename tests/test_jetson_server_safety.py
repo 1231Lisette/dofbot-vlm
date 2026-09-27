@@ -1,4 +1,5 @@
 import importlib.util
+import threading
 from pathlib import Path
 
 import pytest
@@ -15,9 +16,14 @@ def config():
     return SERVER.load_config(Path(__file__).parents[1] / "jetson_app" / "hardware_config.json")
 
 
-def test_only_servo_six_is_enabled():
+def test_all_sliders_use_bounded_commissioning_ranges():
     servos = config()["servos"]
-    assert [servo_id for servo_id, item in servos.items() if item["enabled"]] == ["6"]
+    assert all(item["enabled"] for item in servos.values())
+    for servo_id in ("1", "2", "3", "4", "5"):
+        assert servos[servo_id]["min"] == 85
+        assert servos[servo_id]["max"] == 95
+    assert servos["6"]["min"] == 90
+    assert servos["6"]["max"] == 180
 
 
 def test_gripper_direction_matches_measured_hardware():
@@ -36,9 +42,13 @@ def test_servo_six_accepts_only_commissioned_envelope():
         SERVER.validate_move(settings, 6, 181, 2500)
 
 
-def test_uncalibrated_servo_is_locked():
-    with pytest.raises(ValueError, match="locked until calibration"):
-        SERVER.validate_move(config(), 2, 90, 2500)
+def test_commissioning_joint_rejects_outside_narrow_range():
+    settings = config()
+    SERVER.validate_move(settings, 2, 90, 2500)
+    with pytest.raises(ValueError, match="inside 85..95"):
+        SERVER.validate_move(settings, 2, 84, 2500)
+    with pytest.raises(ValueError, match="inside 85..95"):
+        SERVER.validate_move(settings, 2, 96, 2500)
 
 
 def test_fast_motion_is_rejected():
@@ -56,3 +66,23 @@ def test_victory_pose_stays_locked_until_joint_calibration():
     pose = config()["victory_pose"]
     assert pose["enabled"] is False
     assert pose["steps"] == []
+
+
+def test_controller_rejects_switching_axes_during_active_move():
+    class FakeArm:
+        def Arm_serial_servo_write(self, servo_id, angle, duration_ms):
+            self.last_write = (servo_id, angle, duration_ms)
+
+    controller = object.__new__(SERVER.ArmController)
+    controller.config = config()
+    controller.enabled = True
+    controller.estopped = False
+    controller.arm = FakeArm()
+    controller.lock = threading.Lock()
+    controller.last_angles = {str(index): 90 for index in range(1, 7)}
+    controller.active_servo_id = None
+    controller.motion_until = 0.0
+
+    controller.move(1, 91, 1500)
+    with pytest.raises(RuntimeError, match="servo 1 is still moving"):
+        controller.move(2, 91, 1500)
