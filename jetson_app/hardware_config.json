@@ -17,8 +17,8 @@
   },
   "gripper": {
     "servo_id": 6,
-    "open_angle": 180,
-    "closed_angle": 170,
+    "open_angle": 170,
+    "closed_angle": 180,
     "move_time_ms": 2500
   },
   "victory_pose": {
