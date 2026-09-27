@@ -57,8 +57,6 @@ class Camera(object):
         self.error = None
         self.running = False
         self.lock = threading.Lock()
-        self.active_servo_id = None
-        self.motion_until = 0.0
         self.thread = None
         self.cv2 = None
 
@@ -117,6 +115,8 @@ class ArmController(object):
         self.last_torque_command = "none"
         self.arm = None
         self.lock = threading.Lock()
+        self.active_servo_id = None
+        self.motion_until = 0.0
         self.last_angles = dict(
             (servo_id, int(item["initial"]))
             for servo_id, item in config["servos"].items()
