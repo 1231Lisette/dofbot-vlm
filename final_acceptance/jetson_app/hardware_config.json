@@ -1,0 +1,95 @@
+{
+  "camera": {
+    "devices": [0, 1, 2, 3],
+    "width": 640,
+    "height": 480,
+    "jpeg_quality": 82,
+    "max_fps": 12
+  },
+  "move_time_ms": 2500,
+  "live_move_time_ms": 1500,
+  "manual_control": {
+    "enabled": true,
+    "reason": "用户已重新接线并按 K1 确认机械臂稳定直立；仅允许单轴限步手动控制"
+  },
+  "standby_pose": {
+    "enabled": true,
+    "reason": "用户已逐轴移动并现场确认该姿势稳定",
+    "duration_ms": 1500,
+    "angles": {
+      "1": 90,
+      "2": 130,
+      "3": 0,
+      "4": 40,
+      "5": 90,
+      "6": 180
+    }
+  },
+  "k1_pose": {
+    "enabled": true,
+    "reason": "官方 K1 默认复位为六轴 90 度直立姿态；必须由操作者在按下 K1 后手动确认同步",
+    "angles": {
+      "1": 90,
+      "2": 90,
+      "3": 90,
+      "4": 90,
+      "5": 90,
+      "6": 90
+    }
+  },
+  "servos": {
+    "1": {"name": "底座", "enabled": true, "min": 0, "max": 180, "initial": 90, "max_step": 10},
+    "2": {"name": "肩部", "enabled": true, "min": 0, "max": 180, "initial": 130, "max_step": 10},
+    "3": {"name": "肘部", "enabled": true, "min": 0, "max": 180, "initial": 0, "max_step": 10},
+    "4": {"name": "腕部俯仰", "enabled": true, "min": 0, "max": 180, "initial": 40, "max_step": 10},
+    "5": {"name": "腕部旋转", "enabled": true, "min": 0, "max": 270, "initial": 90, "max_step": 10},
+    "6": {"name": "夹爪", "enabled": true, "min": 0, "max": 180, "initial": 120, "max_step": 10}
+  },
+  "gripper": {
+    "servo_id": 6,
+    "open_angle": 120,
+    "closed_angle": 180,
+    "move_time_ms": 1500
+  },
+  "gesture_actions": {
+    "enabled": true,
+    "reason": "用户已确认等候姿势并授权四手势执行",
+    "actions": {
+      "Thumb_Up": {
+        "label": "张开夹爪",
+        "type": "gripper_open",
+        "enabled": true
+      },
+      "Closed_Fist": {
+        "label": "闭合夹爪",
+        "type": "gripper_close",
+        "enabled": true
+      },
+      "Victory": {
+        "label": "回到等候姿势后点头两次",
+        "type": "standby_then_sequence",
+        "enabled": true,
+        "steps": [
+          {"servo_id": 4, "angle": 50, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 40, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 30, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 40, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 50, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 40, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 30, "duration_ms": 1500},
+          {"servo_id": 4, "angle": 40, "duration_ms": 1500}
+        ]
+      },
+      "Pointing_Up": {
+        "label": "回到等候姿势",
+        "type": "standby",
+        "enabled": true
+      }
+    }
+  },
+  "victory_pose": {
+    "enabled": false,
+    "reason": "舵机 2、3、4 尚未逐轴完成中位、方向和软限位标定",
+    "steps": []
+  }
+}

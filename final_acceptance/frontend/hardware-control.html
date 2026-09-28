@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOFBOT · 真机控制台</title>
+  <link rel="stylesheet" href="/web/hardware-control.css?v=20260928-2">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><p class="eyebrow">DOFBOT / HARDWARE CONSOLE</p><h1>真机手势控制台</h1></div>
+      <div class="header-actions">
+        <span id="server-state" class="chip">连接中</span>
+        <button id="emergency-stop" class="danger">急停 / 解除扭矩</button>
+      </div>
+    </header>
+
+    <section class="top-grid">
+      <div class="panel camera-panel">
+        <div class="panel-title"><div><span>01</span><h2>Jetson 摄像头</h2></div><b id="camera-state">WAITING</b></div>
+        <div class="camera-frame mirrored" id="camera-frame">
+          <img id="camera-image" alt="Jetson camera">
+          <canvas id="overlay" width="640" height="480"></canvas>
+          <div id="camera-placeholder" class="placeholder">等待 `/dev/video0` 图像…</div>
+        </div>
+        <label class="mirror"><input id="mirror" type="checkbox" checked> 镜像预览</label>
+      </div>
+
+      <aside class="panel gesture-panel">
+        <div class="panel-title"><div><span>02</span><h2>手势识别</h2></div><b id="model-state">LOADING</b></div>
+        <div class="live-result">
+          <span id="gesture-icon">—</span>
+          <div><strong id="gesture-name">等待手势</strong><small id="gesture-action">尚未触发</small></div>
+          <b id="confidence">0%</b>
+        </div>
+        <div class="progress"><i id="gesture-progress"></i></div>
+        <p id="message">点赞、握拳和 V 手势需连续稳定出现，放下手后才能再次触发。</p>
+        <div class="gesture-list">
+          <article data-gesture="Thumb_Up"><span>👍</span><div><strong>点赞</strong><small>张开夹爪</small></div></article>
+          <article data-gesture="Closed_Fist"><span>✊</span><div><strong>握拳</strong><small>闭合夹爪</small></div></article>
+          <article data-gesture="Victory"><span>✌️</span><div><strong>V 手势</strong><small>回到等候姿势后点头两次</small></div></article>
+          <article data-gesture="Pointing_Up"><span>☝️</span><div><strong>食指向上</strong><small>回到等候姿势</small></div></article>
+        </div>
+        <label class="hardware-unlock"><input id="hardware-unlock" type="checkbox"> 我已清空工作区、托住机械臂并握住断电开关</label>
+      </aside>
+    </section>
+
+    <section class="panel servo-panel">
+      <div class="panel-title">
+        <div><span>03</span><h2>六轴单舵机控制</h2></div>
+        <div class="torque-actions"><button id="sync-k1" disabled>已按 K1：同步直立姿势</button><button id="standby-pose" disabled>回到等候姿势</button><button id="resume" disabled>恢复/开启扭矩</button><b id="hardware-state">硬件锁定</b></div>
+      </div>
+      <p id="standby-note" class="section-note">尚未获得可靠的六轴等候姿势，按钮保持锁定。滑条显示厂家 Arm_Lib 标称范围：S1/S2/S3/S4/S6 为 0–180°，S5 为 0–270°；任一动作完成前不会接受下一条舵机命令。</p>
+      <div id="servo-controls" class="servo-controls"></div>
+    </section>
+
+    <section class="panel telemetry-panel">
+      <div class="panel-title">
+        <div><span>04</span><h2>六舵机实时状态</h2></div>
+        <b id="telemetry-state">CONNECTING</b>
+      </div>
+      <p class="section-note">目前 Arm_Lib 没有启用安全的持续角度反馈；“目标”是服务端最后一次接受的命令，“实测”保持为未知，不会伪装成舵机已到位。</p>
+      <div class="status-table-wrap">
+        <table class="servo-status-table">
+          <thead><tr><th>ID</th><th>关节</th><th>目标</th><th>实测</th><th>命令状态</th><th>时间</th><th>说明</th></tr></thead>
+          <tbody id="servo-status-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel log-panel">
+      <div class="panel-title"><div><span>05</span><h2>机械臂事件终端</h2></div><b>LAST 80</b></div>
+      <pre id="event-log" class="event-log" aria-live="polite">等待服务端事件…</pre>
+    </section>
+  </main>
+  <script type="module" src="/web/hardware-control.js?v=20260928-2"></script>
+</body>
+</html>
